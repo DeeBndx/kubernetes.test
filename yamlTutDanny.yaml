@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: yamlTut
+  name: yamltut
   labels:
-    name: yamlTut
+    name: yamltut
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: itutil-rabbitmq
-  namespace: yamlTut
+  namespace: yamltut
 spec:
   replicas: 1
   selector:
@@ -33,7 +33,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: itutil-rabbitmq-cluster-ip
-  namespace: yamlTut
+  namespace: yamltut
 spec:
   type: ClusterIP
   selector:
@@ -48,7 +48,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: itutil-gateway
-  namespace: yamlTut
+  namespace: yamltut
 spec:
   replicas: 1
   selector:
@@ -71,7 +71,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: itutil-gateway-load-balancer
-  namespace: yamlTut
+  namespace: yamltut
 spec:
   type: LoadBalancer
   ports:
@@ -90,7 +90,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: itutil-postgres
-  namespace: yamlTut
+  namespace: yamltut
 spec:
   replicas: 1
   selector:
@@ -120,7 +120,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: itutil-postgres-cluster-ip
-  namespace: yamlTut
+  namespace: yamltut
 spec:
   type: ClusterIP
   selector:
@@ -134,7 +134,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: itutil-servicediscovery
-  namespace: yamlTut
+  namespace: yamltut
 spec:
   replicas: 1
   selector:
@@ -153,7 +153,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: itutil-user
-  namespace: yamlTut
+  namespace: yamltut
 spec:
   replicas: 1
   selector:
