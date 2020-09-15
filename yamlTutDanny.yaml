@@ -1,0 +1,169 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: yamlTut
+  labels:
+    name: yamlTut
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: itutil-rabbitmq
+  namespace: yamlTut
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      group: itutil-rabbitmq
+  template:
+    metadata:
+      labels:
+        group: itutil-rabbitmq
+    spec:
+      containers:
+        - image: rabbitmq:3-management
+          name: itutil-rabbithost
+          ports:
+            - containerPort: 5672
+              name: rabbitmq
+            - containerPort: 15672
+              name: gui
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: itutil-rabbitmq-cluster-ip
+  namespace: yamlTut
+spec:
+  type: ClusterIP
+  selector:
+    group: itutil-rabbitmq
+  ports:
+    - port: 5672
+      targetPort: 5672
+      name: core
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: itutil-gateway
+  namespace: yamlTut
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      group: itutil-gateway
+  template:
+    metadata:
+      labels:
+        group: itutil-gateway
+    spec:
+      containers:
+        - name: itutil-web-gateway
+          image: registry.gitlab.com/monosoft/itutil/application.gateway:latest
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: itutil-gateway-load-balancer
+  namespace: yamlTut
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 31101
+      name: itutil-http-gateway
+    - port: 443
+      targetPort: 443
+      nodePort: 31102
+      name: itutil-https-gateway
+  selector:
+    group: itutil-gateway
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: itutil-postgres
+  namespace: yamlTut
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      group: itutil-postgres
+  template:
+    metadata:
+      labels:
+        group: itutil-postgres
+    spec:
+      volumes:
+        - name: itutil-postgres
+      containers:
+        - image: postgres
+          name: itutil-postgres
+          ports:
+            - containerPort: 5432
+              name: db
+          volumeMounts:
+          - name: itutil-postgres
+            mountPath: /var/lib/postgresql/data
+          env:
+            - name: POSTGRES_PASSWORD
+              value: "{{ Password for postgres }}"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: itutil-postgres-cluster-ip
+  namespace: yamlTut
+spec:
+  type: ClusterIP
+  selector:
+    group: itutil-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: itutil-postgres
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: itutil-servicediscovery
+  namespace: yamlTut
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      group: itutil
+  template:
+    metadata:
+      labels:
+        group: itutil
+    spec:
+      containers:
+        - name: itutil-servicediscovery
+          image: registry.gitlab.com/monosoft/itutil/microservice.servicediscovery:latest
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: itutil-user
+  namespace: yamlTut
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      group: itutil-user
+  template:
+    metadata:
+      labels:
+        group: itutil-user
+    spec:
+      containers:
+        - name: ms-user
+          image: registry.gitlab.com/monosoft/itutil/microservice.user:latest
